@@ -7,7 +7,7 @@ from PyQt5.QtGui import QCursor
 
 from ui.base_ui.TreeWidget import Ui_Form
 
-from normalization.EDI import NormalizationProfileModel
+from models.normalization_models import NormalizationProfileModel, Normalization
 from handlers.supportDialogs import save_file_dialog, open_file_dialog, choose_folder
 
 class TreeWidget(QWidget):
@@ -18,8 +18,10 @@ class TreeWidget(QWidget):
 
         self.parent = parent
 
-        self.popMenu = QMenu()
-        self.init_popMenu()
+        self.files_popMenu = QMenu()
+        self.init_popMenu_for_files()
+        self.profiles_popMenu = QMenu()
+        self.init_popMenu_for_profiles()
 
         self.files = {}
         self.profiles = {}
@@ -33,27 +35,43 @@ class TreeWidget(QWidget):
         self.customContextMenuRequested.connect(self.show_popMenu)
     # end def __init__
 
-    def init_popMenu(self):
-        showModelAction = QAction('Save normalization', self)
-        showModelAction.triggered.connect(self.save_normalization)
-        self.popMenu.addAction(showModelAction)
-    # end def init_popMenu
+    def init_popMenu_for_profiles(self):
+        saveNormalizationAction = QAction('Save normalization', self)
+        saveNormalizationAction.triggered.connect(self.save_normalization)
+        self.profiles_popMenu.addAction(saveNormalizationAction)
+    # end def init_popMenu_for_profiles
+
+    def init_popMenu_for_files(self):
+        createProfileAction = QAction('Create profile', self)
+        createProfileAction.triggered.connect(self.create_profile)
+        self.files_popMenu.addAction(createProfileAction)
+    # end def init_popMenu_for_files
 
     def show_popMenu(self):
         item = self.ui.projectTreeWidget.currentItem()
         if item in self.files.values():
-            return
-        cursor = QCursor()
-        self.popMenu.popup(cursor.pos())
+            cursor = QCursor()
+            self.files_popMenu.popup(cursor.pos())
+        elif 'Normalization' in item.text(0):
+            cursor = QCursor()
+            self.profiles_popMenu.popup(cursor.pos())
 
     def save_normalization(self):
         item = self.ui.projectTreeWidget.currentItem()
-        while item not in self.profiles.values():
-            item = item.parent()
+        if item is None:
+            return
+        parent_item = item
+        while parent_item not in self.profiles.values():
+            parent_item = parent_item.parent()
 
-        model = list(self.profiles.keys())[list(self.profiles.values()).index(item)]
+        model = list(self.profiles.keys())[list(self.profiles.values()).index(parent_item)]
         dir_path = choose_folder()
-        model.save_results(dir_path)
+
+        if dir_path is None:
+            return
+
+        norm_id = int(item.text(0).split(' ')[1])
+        model.normalizations[norm_id].save_results(dir_path)
 
     def tree_item_clicked(self):
         def has_different_types():
@@ -75,12 +93,23 @@ class TreeWidget(QWidget):
 
         :param file_paths: Список путей к файлу
         """
+        index = len(self.files) if len(self.files) else 0
+
+        items = []
         for path in file_paths:
             child = QTreeWidgetItem([f'{os.path.basename(path)}'])
             child.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
             self.files[path] = child
-            self.ui.projectTreeWidget.addTopLevelItem(child)
+            items.append(child)
+
+        self.ui.projectTreeWidget.insertTopLevelItems(index, items)
     # end def add_edi_file
+
+    def create_profile(self):
+        paths = self.get_checked_edi_file_paths()
+        self.clear_selection()
+        self.add_normalization_profile(NormalizationProfileModel(paths))
+    # end def create_profile
 
     def add_normalization_profile(self, profile_model: NormalizationProfileModel):
         """
@@ -96,15 +125,30 @@ class TreeWidget(QWidget):
         self.profiles[profile_model].addChild(data_item)
         for path in profile_model.file_paths:
             data_item.addChild(QTreeWidgetItem([f'{os.path.basename(path)}']))
-        self.profiles[profile_model].addChild(QTreeWidgetItem([f'Normalization 1']))
+
+        for i, norm in profile_model.normalizations.items():
+            norm = QTreeWidgetItem([f'Normalization {i}'])
+            self.profiles[profile_model].addChild(norm)
+
+    def add_normalization_to_profile(self, profile: NormalizationProfileModel, norma: Normalization):
+        prof = self.profiles[profile]
+        norm = QTreeWidgetItem([f'Normalization {len(profile.normalizations)}'])
+        prof.addChild(norm)
 
     def get_checked_edi_file_paths(self):
         """
         Возвращает список путей выбранных файлов. Если ничего не выбрано, возвращает все файлы
 
-        :return: List с путями к файлам
+        :return: List с путями к файлам или модель профиля
         """
         paths = []
+        items = self.ui.projectTreeWidget.selectedItems()
+        if len(items) == 1:
+            item = items[0]
+            while item not in self.profiles.values():
+                item = item.parent()
+            return list(self.profiles.keys())[list(self.profiles.values()).index(item)]
+
         for item in self.ui.projectTreeWidget.selectedItems():
             paths.append(list(self.files.keys())[list(self.files.values()).index(item)])
 

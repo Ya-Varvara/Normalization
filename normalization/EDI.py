@@ -1,40 +1,11 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import copy
 
 import mtpy.core.edi as mtedi
-from mtpy.core.edi_collection import EdiCollection
-
-import os
 
 import warnings
 warnings.filterwarnings('ignore')
-
-
-class NormalizationProfileModel:
-    """
-    Класс нормализации модели
-
-    Инициализация -> дается список путей к файлам EDI, внутри это читается и сохраняется
-
-    Метод normalize -> На вход параметры нормализации (если требуется)
-    """
-    def __init__(self, file_paths: list[str]):
-        self.file_paths = file_paths
-        self.edis = read_edi_files(self.file_paths)
-        self.normalize_edis = self.normalize()
-
-    def normalize(self, period=None, mt_points=None, sigma=None):
-        t_id = 1
-        if mt_points is None:
-            mt_points = 8
-
-        return normalize_rho(self.edis, t_id, mt_points)
-
-    def save_results(self, dir_path):
-        for i, edi in enumerate(self.normalize_edis):
-            edi.write_edi_file(f'{dir_path}/{i+1}.edi')
 
 
 def edi_fill_nans(edi):
