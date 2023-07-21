@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QFileDialog
 
+
 def open_file_dialog(file_filter='EDI (*.edi)'):
     """
     Открывает окно для выбора файлов в файловой системе
@@ -16,6 +17,7 @@ def open_file_dialog(file_filter='EDI (*.edi)'):
     else:
         return None
 
+
 def save_file_dialog(file_filter=None):
     if file_filter is None:
         file_filter = 'Text File (*.txt)'
@@ -29,6 +31,7 @@ def save_file_dialog(file_filter=None):
         return response[0]
     else:
         return None
+
 
 def choose_folder():
     response = QFileDialog.getExistingDirectory(

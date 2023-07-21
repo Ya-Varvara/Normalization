@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
-
 import mtpy.core.edi as mtedi
 
 import warnings
@@ -110,8 +109,14 @@ def normalize_rho(edis, T_id, n_points):
         res_array = np.empty([len(edis[i].Z.freq), 2, 2])
         phase_array = np.empty([len(edis[i].Z.freq), 2, 2])
 
-        new_edis[i].Z.res_xy[:] = edis[i].Z.res_xy[:] * rhos_xy_f[i] / edis[i].Z.res_xy[T_id]
-        new_edis[i].Z.res_yx[:] = edis[i].Z.res_yx[:] * rhos_yx_f[i] / edis[i].Z.res_yx[T_id]
-        edi_fill_nans(new_edis[i])
+        xy_c = rhos_xy_f[i] / edis[i].Z.res_xy[T_id]
+        yx_c = rhos_yx_f[i] / edis[i].Z.res_yx[T_id]
 
+        new_edis[i].Z.res_xy[:] = edis[i].Z.res_xy[:] * xy_c
+        new_edis[i].Z.res_yx[:] = edis[i].Z.res_yx[:] * yx_c
+
+        new_edis[i].Z.z[:, 0, 1] *= np.sqrt(xy_c)
+        new_edis[i].Z.z[:, 1, 0] *= np.sqrt(yx_c)
+
+        edi_fill_nans(new_edis[i])
     return new_edis

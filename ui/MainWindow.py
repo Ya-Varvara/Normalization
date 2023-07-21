@@ -16,6 +16,7 @@ class MainWindow(QMainWindow):
 
         self.tree = TreeWidget(self)
         self.ui.treeDock.setWidget(self.tree)
+        self.widgets = []
 
         self.ui.openFileBtn.clicked.connect(self.open_edi_files)
         self.ui.saveFileBtn.clicked.connect(self.tree.save_normalization)
@@ -39,10 +40,18 @@ class MainWindow(QMainWindow):
         self.tree.clear_selection()
 
         if isinstance(paths, NormalizationProfileModel):
-            # TODO добавить обновление профиля в дереве при добавлении нормализации
             self.tree.add_normalization_to_profile(paths, paths.add_normalization(period, mt_points))
             return
         else:
             profile = NormalizationProfileModel(paths)
             profile.add_normalization(period, mt_points)
             self.tree.add_normalization_profile(profile)
+
+    def add_widget(self, widget):
+        self.widgets.append(widget)
+        self.ui.mainStackedWidget.addWidget(widget)
+
+    def show_widget(self, widget):
+        if widget not in self.widgets:
+            self.add_widget(widget)
+        self.ui.mainStackedWidget.setCurrentWidget(widget)

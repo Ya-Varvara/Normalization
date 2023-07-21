@@ -36,6 +36,12 @@ class TreeWidget(QWidget):
     # end def __init__
 
     def init_popMenu_for_profiles(self):
+        showNormalizationAction = QAction('Show normalization', self)
+        showNormalizationAction.triggered.connect(self.show_normalization)
+        self.profiles_popMenu.addAction(showNormalizationAction)
+        showProfileAction = QAction('Show profile', self)
+        showProfileAction.triggered.connect(self.show_profile)
+        self.profiles_popMenu.addAction(showProfileAction)
         saveNormalizationAction = QAction('Save normalization', self)
         saveNormalizationAction.triggered.connect(self.save_normalization)
         self.profiles_popMenu.addAction(saveNormalizationAction)
@@ -73,6 +79,33 @@ class TreeWidget(QWidget):
         norm_id = int(item.text(0).split(' ')[1])
         model.normalizations[norm_id].save_results(dir_path)
 
+    def show_normalization(self, item=None):
+        if item is None:
+            item = self.ui.projectTreeWidget.currentItem()
+        norm_id = int(item.text(0).split()[1])
+        profile_item = None
+        for i, prof in self.profiles.items():
+            if item.parent() == prof:
+                profile_item = i
+                break
+        if profile_item is None:
+            return
+
+        self.parent.show_widget(profile_item.normalizations[norm_id].data_widget)
+
+    def show_profile(self, item=None):
+        if item is None:
+            item = self.ui.projectTreeWidget.currentItem()
+        profile_item = None
+        for i, prof in self.profiles.items():
+            if item == prof:
+                profile_item = i
+                break
+        if profile_item is None:
+            return
+
+        self.parent.show_widget(profile_item.data_widget)
+
     def tree_item_clicked(self):
         def has_different_types():
             for i in self.ui.projectTreeWidget.selectedItems():
@@ -85,6 +118,15 @@ class TreeWidget(QWidget):
             self.ui.projectTreeWidget.clearSelection()
             item.setSelected(True)
         print(item.text(0))
+
+        if 'Profile' in item.text(0):
+            self.show_profile(item)
+        elif 'Normalization' in item.text(0):
+            self.show_normalization(item)
+        elif 'Data' in item.text(0):
+            self.show_profile(item.parent())
+
+
     # end def tree_item_clicked
 
     def add_edi_file(self, file_paths: list):
@@ -127,13 +169,17 @@ class TreeWidget(QWidget):
             data_item.addChild(QTreeWidgetItem([f'{os.path.basename(path)}']))
 
         for i, norm in profile_model.normalizations.items():
+            self.parent.add_widget(norm.data_widget)
             norm = QTreeWidgetItem([f'Normalization {i}'])
             self.profiles[profile_model].addChild(norm)
+
+        self.parent.show_widget(profile_model.data_widget)
 
     def add_normalization_to_profile(self, profile: NormalizationProfileModel, norma: Normalization):
         prof = self.profiles[profile]
         norm = QTreeWidgetItem([f'Normalization {len(profile.normalizations)}'])
         prof.addChild(norm)
+        # self.parent.add_widget(norma.data_widget)
 
     def get_checked_edi_file_paths(self):
         """
