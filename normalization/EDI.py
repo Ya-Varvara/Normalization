@@ -84,12 +84,12 @@ def plot_edi_rho(edis, figsize=(20, 20)):
         axes[3][1].semilogx(t, edi.Z.phase_yy)
 
 
-def normalize_rho(edis, T_id, n_points):
+def normalize_rho(edis, T, n_points):
     """
     Функция для нормализации набора Edi.
 
     :param edis: набор edi
-    :param T_id: номер периода, на котором происходит нормализация
+    :param T: период в секундах, на котором происходит нормализация
     :param n_points: количество точек, по которым происходит осреднение
     """
 
@@ -97,8 +97,19 @@ def normalize_rho(edis, T_id, n_points):
     rhos_yx = np.empty(len(edis))
 
     for i, edi in enumerate(edis):
-        rhos_xy[i] = edi.Z.res_xy[T_id]
-        rhos_yx[i] = edi.Z.res_yx[T_id]
+        T_id = np.argmin(np.abs(1 / edi.Z.freq - T))
+
+        if np.isnan(edi.Z.res_xy[T_id]):
+            nans = np.isnan(edi.Z.res_xy)
+            rhos_xy[i] = np.interp(T_id, np.arange(len(nans))[~nans], edi.Z.res_xy[~nans])
+        else:
+            rhos_xy[i] = edi.Z.res_xy[T_id]
+
+        if np.isnan(edi.Z.res_yx[T_id]):
+            nans = np.isnan(edi.Z.res_yx)
+            rhos_yx[i] = np.interp(T_id, np.arange(len(nans))[~nans], edi.Z.res_yx[~nans])
+        else:
+            rhos_yx[i] = edi.Z.res_yx[T_id]
 
     rhos_xy_f = moving_avg_filter(np.arange(len(edis)), rhos_xy, n_points)
     rhos_yx_f = moving_avg_filter(np.arange(len(edis)), rhos_yx, n_points)
