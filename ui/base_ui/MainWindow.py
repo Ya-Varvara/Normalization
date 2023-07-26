@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainWindow.ui'
+# Form implementation generated from reading ui file '.\MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -18,9 +18,20 @@ class Ui_MainWindow(object):
         MainWindow.setStyleSheet("")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        self.gridLayout_9 = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout_9.setObjectName("gridLayout_9")
+        self.mainStackedWidget = QtWidgets.QStackedWidget(self.centralwidget)
+        self.mainStackedWidget.setObjectName("mainStackedWidget")
+        self.page = QtWidgets.QWidget()
+        self.page.setObjectName("page")
+        self.mainStackedWidget.addWidget(self.page)
+        self.page_2 = QtWidgets.QWidget()
+        self.page_2.setObjectName("page_2")
+        self.mainStackedWidget.addWidget(self.page_2)
+        self.gridLayout_9.addWidget(self.mainStackedWidget, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1220, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1220, 18))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -29,9 +40,7 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.normalizationDock = QtWidgets.QDockWidget(MainWindow)
-        self.normalizationDock.setStyleSheet("\n"
-"\n"
-"")
+        self.normalizationDock.setStyleSheet("")
         self.normalizationDock.setFeatures(QtWidgets.QDockWidget.NoDockWidgetFeatures)
         self.normalizationDock.setObjectName("normalizationDock")
         self.dockWidgetContents = QtWidgets.QWidget()
@@ -203,7 +212,7 @@ class Ui_MainWindow(object):
         self.effBtn_phaseGB.setText(_translate("MainWindow", "Eff"))
         self.yxBtn_phaseGB.setText(_translate("MainWindow", "YX"))
         self.xyBtn_phaseGB.setText(_translate("MainWindow", "XY"))
-        self.resultGroupBox.setTitle(_translate("MainWindow", "Result"))
+        self.resultGroupBox.setTitle(_translate("MainWindow", "Res"))
         self.yxBtn_resultGB.setText(_translate("MainWindow", "YX"))
         self.effBtn_resultGB.setText(_translate("MainWindow", "Eff"))
         self.xyBtn_resultGB.setText(_translate("MainWindow", "XY"))
