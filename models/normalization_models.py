@@ -51,9 +51,6 @@ class Normalization:
         self.edis = edis
         self.mt_points = mt_points
         self.period = period
-
-        self.result_edis = None
-        self.data_widget = None
         self.file_paths = file_paths
 
         periods = self.edis[0].Z.res_xy
@@ -68,19 +65,13 @@ class Normalization:
                     self.period_index = i
                 else:
                     break
-        self.normalize()
 
-    def normalize(self):
         self.result_edis = normalize_rho(self.edis, self.period_index, self.mt_points)
         self.data_widget = MTComponent(self, self.result_edis)
-        print(self.edis)
-        print(self.result_edis)
-        return self.result_edis
 
     def save_results(self, dir_path):
         names = [os.path.splitext(os.path.basename(i))[0] for i in self.file_paths]
-        if self.result_edis is None:
-            self.normalize()
+
         for i, edi in enumerate(self.result_edis):
             edi.write_edi_file(f'{dir_path}/{names[i]}.edi')
 

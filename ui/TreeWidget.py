@@ -10,6 +10,7 @@ from ui.base_ui.TreeWidget import Ui_Form
 from models.normalization_models import NormalizationProfileModel, Normalization
 from handlers.supportDialogs import save_file_dialog, open_file_dialog, choose_folder
 
+
 class TreeWidget(QWidget):
     def __init__(self, parent=None):
         super(TreeWidget, self).__init__()
@@ -22,8 +23,16 @@ class TreeWidget(QWidget):
         self.init_popMenu_for_files()
         self.profiles_popMenu = QMenu()
         self.init_popMenu_for_profiles()
+        self.normalization_popMenu = QMenu()
+        self.init_popMenu_for_normalizations()
 
+        self.top_level_items = {'EDI files': QTreeWidgetItem([f'EDI files']),
+                                'Profiles': QTreeWidgetItem([f'Profiles'])}
+
+        # словарь файлов .EDI вида {filepath: QTreeWidgetItem}
         self.files = {}
+
+        # словарь созданных профилей вида {NormalizationProfileModel: QTreeWidgetItem}
         self.profiles = {}
 
         self.ui.projectTreeWidget.setHeaderLabel('Дерево проекта')
@@ -33,32 +42,48 @@ class TreeWidget(QWidget):
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_popMenu)
+
     # end def __init__
 
     def init_popMenu_for_profiles(self):
-        showNormalizationAction = QAction('Show normalization', self)
-        showNormalizationAction.triggered.connect(self.show_normalization)
-        self.profiles_popMenu.addAction(showNormalizationAction)
         showProfileAction = QAction('Show profile', self)
         showProfileAction.triggered.connect(self.show_profile)
         self.profiles_popMenu.addAction(showProfileAction)
+
+        deleteProfileAction = QAction('Delete profile', self)
+        deleteProfileAction.triggered.connect(self.remove_profile_model)
+        self.profiles_popMenu.addAction(deleteProfileAction)
+    # end def init_popMenu_for_profiles
+
+    def init_popMenu_for_normalizations(self):
         saveNormalizationAction = QAction('Save normalization', self)
         saveNormalizationAction.triggered.connect(self.save_normalization)
-        self.profiles_popMenu.addAction(saveNormalizationAction)
-    # end def init_popMenu_for_profiles
+        self.normalization_popMenu.addAction(saveNormalizationAction)
+
+        showNormalizationAction = QAction('Show normalization', self)
+        showNormalizationAction.triggered.connect(self.show_normalization)
+        self.normalization_popMenu.addAction(showNormalizationAction)
+
+        deleteNormalizationAction = QAction('Delete normalization', self)
+        deleteNormalizationAction.triggered.connect(self.remove_normalization_model)
+        self.normalization_popMenu.addAction(deleteNormalizationAction)
 
     def init_popMenu_for_files(self):
         createProfileAction = QAction('Create profile', self)
         createProfileAction.triggered.connect(self.create_profile)
         self.files_popMenu.addAction(createProfileAction)
+
     # end def init_popMenu_for_files
 
     def show_popMenu(self):
         item = self.ui.projectTreeWidget.currentItem()
-        if item in self.files.values():
+        if item.parent() == self.top_level_items['EDI files']:
             cursor = QCursor()
             self.files_popMenu.popup(cursor.pos())
         elif 'Normalization' in item.text(0):
+            cursor = QCursor()
+            self.normalization_popMenu.popup(cursor.pos())
+        elif item.parent() == self.top_level_items['Profiles']:
             cursor = QCursor()
             self.profiles_popMenu.popup(cursor.pos())
 
@@ -107,26 +132,23 @@ class TreeWidget(QWidget):
         self.parent.show_widget(profile_item.data_widget)
 
     def tree_item_clicked(self):
-        def has_different_types():
-            for i in self.ui.projectTreeWidget.selectedItems():
-                if i not in self.files.values():
-                    return True
-            return False
-
-        item = self.ui.projectTreeWidget.currentItem()
-        if item not in self.files.values() or has_different_types():
+        current_item = self.ui.projectTreeWidget.currentItem()
+        print(current_item.text(0))
+        if current_item.parent() != self.top_level_items['EDI files']:
             self.ui.projectTreeWidget.clearSelection()
-            item.setSelected(True)
-        print(item.text(0))
-
-        if 'Profile' in item.text(0):
-            self.show_profile(item)
-        elif 'Normalization' in item.text(0):
-            self.show_normalization(item)
-        elif 'Data' in item.text(0):
-            self.show_profile(item.parent())
-
-
+            current_item.setSelected(True)
+            if 'Profile' in current_item.text(0):
+                self.show_profile(current_item)
+            elif 'Normalization' in current_item.text(0):
+                self.show_normalization(current_item)
+            elif 'Data' in current_item.text(0):
+                self.show_profile(current_item.parent())
+        else:
+            for item in self.ui.projectTreeWidget.selectedItems():
+                if item.parent() != self.top_level_items['EDI files']:
+                    self.ui.projectTreeWidget.clearSelection()
+                    current_item.setSelected(True)
+                    break
     # end def tree_item_clicked
 
     def add_edi_file(self, file_paths: list):
@@ -135,16 +157,19 @@ class TreeWidget(QWidget):
 
         :param file_paths: Список путей к файлу
         """
-        index = len(self.files) if len(self.files) else 0
 
-        items = []
+        parent_item = self.top_level_items['EDI files']
+
+        if not len(self.files):
+            self.ui.projectTreeWidget.addTopLevelItem(parent_item)
+
         for path in file_paths:
             child = QTreeWidgetItem([f'{os.path.basename(path)}'])
             child.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
             self.files[path] = child
-            items.append(child)
+            parent_item.addChild(child)
 
-        self.ui.projectTreeWidget.insertTopLevelItems(index, items)
+        parent_item.setExpanded(True)
     # end def add_edi_file
 
     def create_profile(self):
@@ -159,19 +184,24 @@ class TreeWidget(QWidget):
 
         :param profile_model: Класс модели профиля
         """
-        item = QTreeWidgetItem([f'Profile {len(self.profiles)+1}'])
-        self.profiles[profile_model] = item
-        self.ui.projectTreeWidget.addTopLevelItem(item)
+        parent_item = self.top_level_items['Profiles']
+        if not len(self.profiles):
+            self.ui.projectTreeWidget.addTopLevelItem(parent_item)
+            parent_item.setExpanded(True)
+
+        profile_item = QTreeWidgetItem([f'Profile {len(self.profiles) + 1}'])
+        self.profiles[profile_model] = profile_item
+        parent_item.addChild(profile_item)
 
         data_item = QTreeWidgetItem([f'Data'])
-        self.profiles[profile_model].addChild(data_item)
+        profile_item.addChild(data_item)
         for path in profile_model.file_paths:
             data_item.addChild(QTreeWidgetItem([f'{os.path.basename(path)}']))
 
         for i, norm in profile_model.normalizations.items():
             self.parent.add_widget(norm.data_widget)
             norm = QTreeWidgetItem([f'Normalization {i}'])
-            self.profiles[profile_model].addChild(norm)
+            profile_item.addChild(norm)
 
         self.parent.show_widget(profile_model.data_widget)
 
@@ -179,33 +209,82 @@ class TreeWidget(QWidget):
         prof = self.profiles[profile]
         norm = QTreeWidgetItem([f'Normalization {len(profile.normalizations)}'])
         prof.addChild(norm)
-        # self.parent.add_widget(norma.data_widget)
+        self.parent.show_widget(norma.data_widget)
 
     def get_checked_edi_file_paths(self):
         """
-        Возвращает список путей выбранных файлов. Если ничего не выбрано, возвращает все файлы
+        Возвращает список путей выбранных файлов
 
         :return: List с путями к файлам или модель профиля
         """
         paths = []
         items = self.ui.projectTreeWidget.selectedItems()
-        if len(items) == 1:
-            item = items[0]
-            while item not in self.profiles.values():
-                item = item.parent()
-            return list(self.profiles.keys())[list(self.profiles.values()).index(item)]
-
-        for item in self.ui.projectTreeWidget.selectedItems():
-            paths.append(list(self.files.keys())[list(self.files.values()).index(item)])
-
-        if paths:
+        if len(items):
+            for item in items:
+                paths.append(list(self.files.keys())[list(self.files.values()).index(item)])
+            self.clear_selection()
             return paths
-        else:
-            return list(self.files.keys())
+
+    def get_selected_normalization_model(self) -> [NormalizationProfileModel | None]:
+        """
+        Возвращает выбранный профиль нормализации. Если профиль не выбран возвращает None
+
+        :return: Профиль нормализации
+        """
+        item = self.ui.projectTreeWidget.currentItem()
+
+        while item.parent() and item.parent() != self.top_level_items['Profiles']:
+            item = item.parent()
+
+        if 'Profile' in item.text(0).split():
+            return list(self.profiles.keys())[list(self.profiles.values()).index(item)]
+        return None
 
     def clear_selection(self):
         """
         Очищает выделение файлов.
         """
         self.ui.projectTreeWidget.clearSelection()
+
+    def get_current_normalization(self) -> [Normalization | None]:
+        item = self.ui.projectTreeWidget.currentItem()
+        norm_id = int(item.text(0).split()[1])
+        profile_item = None
+        for i, prof in self.profiles.items():
+            if item.parent() == prof:
+                profile_item = i
+                return profile_item.normalizations[norm_id]
+        if profile_item is None:
+            return None
+
+    def remove_profile_model(self):
+        profile_model = self.get_selected_normalization_model()
+        item = self.ui.projectTreeWidget.currentItem()
+        if profile_model:
+            self.top_level_items['Profiles'].removeChild(item)
+
+            widgets = [profile_model.data_widget]
+            for norm in profile_model.normalizations.values():
+                widgets.append(norm.data_widget)
+            self.parent.remove_widgets(widgets)
+
+    def remove_normalization_model(self):
+        profile_model = self.get_selected_normalization_model()
+        norm_item = self.ui.projectTreeWidget.currentItem()
+        profile_item = norm_item.parent()
+        norm_id = int(norm_item.text(0).split()[1])
+
+        if profile_model:
+            profile_item.removeChild(norm_item)
+            widgets = [profile_model.normalizations[norm_id].data_widget]
+            self.parent.remove_widgets(widgets)
+
+    def find_model_by_widget(self, widget):
+        for profile in self.profiles.keys():
+            if profile.data_widget == widget:
+                return profile
+            for norm in profile.normalizations.values():
+                if norm.data_widget == widget:
+                    return norm
+        return None
 

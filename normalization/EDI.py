@@ -26,9 +26,7 @@ def read_edi_files(fnames):
     """
     Функция читает файлы из путей, которые содержатся в списке fnames, и создает список объектов Edi
     """
-
     edis = []
-
     for fname in fnames:
         edi = mtedi.Edi()
         edi.read_edi_file(fname)
@@ -44,7 +42,6 @@ def moving_avg_filter(x, data, width):
     """
 
     data_f = np.empty(len(data))
-
     for i in range(len(data)):
         data_f[i] = np.mean(data[np.logical_and(x >= x[i] - width / 2, x <= x[i] + width / 2)])
 
@@ -120,8 +117,8 @@ def normalize_rho(edis, T, n_points):
         res_array = np.empty([len(edis[i].Z.freq), 2, 2])
         phase_array = np.empty([len(edis[i].Z.freq), 2, 2])
 
-        xy_c = rhos_xy_f[i] / edis[i].Z.res_xy[T_id]
-        yx_c = rhos_yx_f[i] / edis[i].Z.res_yx[T_id]
+        xy_c = rhos_xy_f[i] / rhos_xy[i]
+        yx_c = rhos_yx_f[i] / rhos_yx[i]
 
         new_edis[i].Z.res_xy[:] = edis[i].Z.res_xy[:] * xy_c
         new_edis[i].Z.res_yx[:] = edis[i].Z.res_yx[:] * yx_c
@@ -130,4 +127,5 @@ def normalize_rho(edis, T, n_points):
         new_edis[i].Z.z[:, 1, 0] *= np.sqrt(yx_c)
 
         edi_fill_nans(new_edis[i])
+
     return new_edis

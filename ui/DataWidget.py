@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QComboBox, QGridLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import cm, ticker
+import matplotlib.gridspec as gridspec
 
 
 def calc_effective_Z(z):
@@ -44,7 +45,16 @@ class MTComponent(QWidget):
                      ['Rho YX', 'PHI YX'],
                      ['Rho Eff', 'PHI Eff']]
 
+        self.visibility = {'Rho XY': True,
+                           'Rho YX': True,
+                           'PHI XY': True,
+                           'PHI YX': True,
+                           'Rho Eff': True,
+                           'PHI Eff': True}
+
         self.axes = {}
+        self.colorbars = {}
+        self.contours = {}
 
         mu0 = 4 * np.pi * 1e-7
 
@@ -115,11 +125,14 @@ class MTComponent(QWidget):
             for i in range(3):
                 lvls, ticks = calc_log_levels(res_list[i], levels)
 
-                c_map = self.axes[self.lbls[i][0]].contourf(x, times, res_list[i], levels=lvls, locator=ticker.LogLocator(), cmap=cmap)
-                b_xx = self.figure.colorbar(c_map, ticks=ticks)
+                self.contours[self.lbls[i][0]] = self.axes[self.lbls[i][0]].contourf(x, times, res_list[i], levels=lvls,
+                                                                                     locator=ticker.LogLocator(),
+                                                                                     cmap=cmap)
+                self.colorbars[self.lbls[i][0]] = self.figure.colorbar(self.contours[self.lbls[i][0]], ticks=ticks)
 
-                c_map_ph = self.axes[self.lbls[i][1]].contourf(x, times, phase_list[i], cmap=cmap, levels=levels)
-                self.figure.colorbar(c_map_ph)
+                self.contours[self.lbls[i][1]] = self.axes[self.lbls[i][1]].contourf(x, times, phase_list[i], cmap=cmap,
+                                                                                     levels=levels)
+                self.colorbars[self.lbls[i][1]] = self.figure.colorbar(self.contours[self.lbls[i][1]])
 
             for ax in self.axes.values():
                 ax.set_ylim([times[0], times[-1]])
@@ -153,3 +166,13 @@ class MTComponent(QWidget):
 
                 self.axes[self.lbls[2][0]].loglog(t, np.abs(rho_eff))
                 self.axes[self.lbls[2][1]].semilogx(t, phase_eff)
+
+    def set_visible(self, label: str, visible: bool):
+        print(label, visible)
+        self.axes[label].set_visible(visible)
+        self.visibility[label] = visible
+        if visible:
+            self.colorbars[label] = self.figure.colorbar(self.contours[label])
+        else:
+            self.colorbars[label].remove()
+        self.canvas.draw()
