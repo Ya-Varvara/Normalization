@@ -8,7 +8,7 @@ from PyQt5.QtGui import QCursor
 from ui.base_ui.TreeWidget import Ui_Form
 
 from models.normalization_models import NormalizationProfileModel, Normalization
-from handlers.supportDialogs import save_file_dialog, open_file_dialog, choose_folder
+from handlers.supportDialogs import choose_folder
 
 
 class TreeWidget(QWidget):
@@ -53,6 +53,7 @@ class TreeWidget(QWidget):
         deleteProfileAction = QAction('Delete profile', self)
         deleteProfileAction.triggered.connect(self.remove_profile_model)
         self.profiles_popMenu.addAction(deleteProfileAction)
+
     # end def init_popMenu_for_profiles
 
     def init_popMenu_for_normalizations(self):
@@ -149,9 +150,10 @@ class TreeWidget(QWidget):
                     self.ui.projectTreeWidget.clearSelection()
                     current_item.setSelected(True)
                     break
+
     # end def tree_item_clicked
 
-    def add_edi_file(self, file_paths: list):
+    def add_edi_file(self, file_paths: list[str]):
         """
         Добавляет в дерево проекта файлы данных с расширением .EDI
 
@@ -170,12 +172,14 @@ class TreeWidget(QWidget):
             parent_item.addChild(child)
 
         parent_item.setExpanded(True)
+
     # end def add_edi_file
 
     def create_profile(self):
         paths = self.get_checked_edi_file_paths()
         self.clear_selection()
         self.add_normalization_profile(NormalizationProfileModel(paths))
+
     # end def create_profile
 
     def add_normalization_profile(self, profile_model: NormalizationProfileModel):
@@ -287,4 +291,3 @@ class TreeWidget(QWidget):
                 if norm.data_widget == widget:
                     return norm
         return None
-

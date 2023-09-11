@@ -87,4 +87,3 @@ class MainWindow(QMainWindow):
     def set_visibility_buttons_checked(self, visibility):
         for button, label in self.mtComponentButtons.items():
             button.setChecked(visibility[label])
-

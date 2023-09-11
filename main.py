@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 from PyQt5.QtGui import QPixmap
-from ui.MainWindow import MainWindow
+from ui.NewMainWindow import MainWindow
 
 
 if __name__ == "__main__":
