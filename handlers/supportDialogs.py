@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QFileDialog
 
 
-def open_file_dialog(file_filter='EDI (*.edi)'):
+def open_file_dialog(file_filter='EDI (*.edi);; txt (*.txt)'):
     """
     Открывает окно для выбора файлов в файловой системе
 

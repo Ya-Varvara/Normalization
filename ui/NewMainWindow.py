@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtWidgets import QMainWindow
 
 from ui.base_ui.NewMainWindow import Ui_MainWindow
@@ -29,14 +31,30 @@ class MainWindow(QMainWindow):
         self.ui.tabWidget.addTab(self.normalization_control, 'Normalization')
         self.ui.tabWidget.addTab(self.inversion_type, 'Inversion')
 
-        self.normalization_control.ui.openFileBtn.clicked.connect(self.open_edi_files)
-        self.inversion_1d_control.ui.openFileBtn.clicked.connect(self.open_edi_files)
+        self.normalization_control.ui.openFileBtn.clicked.connect(self.open_files)
+        self.inversion_1d_control.ui.openFileBtn.clicked.connect(self.open_files)
 
-    def open_edi_files(self):
+    def open_files(self):
         file_paths = open_file_dialog()
         if file_paths is None:
             return
+        edi_files = []
+        txt_files = []
+        for path in file_paths:
+            if path.endswith(".edi"):
+                edi_files.append(path)
+            elif path.endswith(".txt"):
+                txt_files.append(path)
+
+        self.tree.add_edi_file(edi_files)
+        self.tree.add_txt_file(txt_files)
+
+
+    def open_edi_files(self, file_paths):
         self.tree.add_edi_file(file_paths)
+
+    def open_txt_files(self, file_paths):
+        self.tree.add_txt_file(file_paths)
 
     def add_widget(self, widget):
         self.widgets.append(widget)

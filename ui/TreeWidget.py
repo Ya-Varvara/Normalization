@@ -27,16 +27,24 @@ class TreeWidget(QWidget):
         self.init_popMenu_for_normalizations()
 
         self.top_level_items = {'EDI files': QTreeWidgetItem([f'EDI files']),
+                                'TXT files': QTreeWidgetItem([f'TXT files']),
                                 'Profiles': QTreeWidgetItem([f'Profiles'])}
 
         # словарь файлов .EDI вида {filepath: QTreeWidgetItem}
-        self.files = {}
+        self.edi_files = {}
+
+        # словарь файлов .txt вида {filepath: QTreeWidgetItem}
+        self.txt_files = {}
 
         # словарь созданных профилей вида {NormalizationProfileModel: QTreeWidgetItem}
         self.profiles = {}
 
         self.ui.projectTreeWidget.setHeaderLabel('Дерево проекта')
         self.ui.projectTreeWidget.setSelectionMode(QAbstractItemView.MultiSelection)
+
+        for item in self.top_level_items.values():
+            self.ui.projectTreeWidget.addTopLevelItem(item)
+            item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
 
         self.ui.projectTreeWidget.itemClicked.connect(self.tree_item_clicked)
 
@@ -159,20 +167,32 @@ class TreeWidget(QWidget):
 
         :param file_paths: Список путей к файлу
         """
-
         parent_item = self.top_level_items['EDI files']
-
-        if not len(self.files):
-            self.ui.projectTreeWidget.addTopLevelItem(parent_item)
 
         for path in file_paths:
             child = QTreeWidgetItem([f'{os.path.basename(path)}'])
             child.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-            self.files[path] = child
+            self.edi_files[path] = child
             parent_item.addChild(child)
 
         parent_item.setExpanded(True)
+    # end def add_edi_file
 
+    def add_txt_file(self, file_paths: list[str]):
+        """
+        Добавляет в дерево проекта файлы данных с расширением .txt
+
+        :param file_paths: Список путей к файлу
+        """
+        parent_item = self.top_level_items['TXT files']
+
+        for path in file_paths:
+            child = QTreeWidgetItem([f'{os.path.basename(path)}'])
+            child.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+            self.txt_files[path] = child
+            parent_item.addChild(child)
+
+        parent_item.setExpanded(True)
     # end def add_edi_file
 
     def create_profile(self):
@@ -225,7 +245,7 @@ class TreeWidget(QWidget):
         items = self.ui.projectTreeWidget.selectedItems()
         if len(items):
             for item in items:
-                paths.append(list(self.files.keys())[list(self.files.values()).index(item)])
+                paths.append(list(self.edi_files.keys())[list(self.edi_files.values()).index(item)])
             self.clear_selection()
             return paths
 

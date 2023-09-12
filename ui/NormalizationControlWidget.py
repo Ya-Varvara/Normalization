@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QWidget
 
 from ui.base_ui.NormalizationControlWidget import Ui_Form
-from handlers.supportDialogs import open_file_dialog
 from ui.TreeWidget import TreeWidget
 
 
