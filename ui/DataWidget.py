@@ -1,11 +1,10 @@
 import numpy as np
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QComboBox, QGridLayout
+from PyQt5.QtWidgets import QWidget, QGridLayout
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import cm, ticker
-import matplotlib.gridspec as gridspec
 
 
 def calc_effective_Z(z):
