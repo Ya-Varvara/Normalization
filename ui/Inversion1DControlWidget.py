@@ -1,6 +1,8 @@
 from ui.base_ui.Inversion1DControlWidget import Ui_Form
 from PyQt5.QtWidgets import QWidget
 
+from ui.SimpleModelDialog import SimpleModelDialog
+
 
 class Inversion1DControlWidget(QWidget):
     def __init__(self, parent=None, tree=None):
@@ -20,3 +22,17 @@ class Inversion1DControlWidget(QWidget):
         self.ui.addData_Btn.setDisabled(True)
         self.ui.equation_Btn.setDisabled(True)
         self.ui.saveFileBtn.setDisabled(True)
+
+        self.ui.inversionData_Btn.clicked.connect(self.create_simple_model)
+
+    def create_simple_model(self):
+        print('Clicked')
+        dialog = SimpleModelDialog()
+        dialog.show()
+        if dialog.exec_():
+            data = dialog.data
+            file_path = dialog.file_name
+            print(data, file_path)
+            # model = SimpleModel(file_path, data[0], data[1], data[2])
+            # self.add_model(model)
+    # end def create_simple_model
