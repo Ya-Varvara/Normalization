@@ -446,11 +446,14 @@
       <item row="0" column="0">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QPushButton" name="inversionData_Btn">
+         <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>Inversion data</string>
+           <string>Inversion Data</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBox"/>
         </item>
         <item>
          <widget class="QPushButton" name="invertionType_Btn">
