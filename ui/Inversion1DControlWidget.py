@@ -23,7 +23,7 @@ class Inversion1DControlWidget(QWidget):
         self.ui.equation_Btn.setDisabled(True)
         self.ui.saveFileBtn.setDisabled(True)
 
-        self.ui.inversionData_Btn.clicked.connect(self.create_simple_model)
+        self.ui.meshEdit_Btn.clicked.connect(self.create_simple_model)
 
     def create_simple_model(self):
         print('Clicked')
@@ -32,7 +32,5 @@ class Inversion1DControlWidget(QWidget):
         if dialog.exec_():
             data = dialog.data
             file_path = dialog.file_name
-            print(data, file_path)
-            # model = SimpleModel(file_path, data[0], data[1], data[2])
-            # self.add_model(model)
+            print(data, file_path)  
     # end def create_simple_model

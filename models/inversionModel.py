@@ -18,3 +18,4 @@ class InversionModel:
 
         self.ro_out, self.h_out = fit_1d_model(ro_init, h_init, is_fixed_ro, is_fixed_h, Z, t_list, N_iter = 10, method='CG',
                              min_res=0.1, max_res=10000)
+        
