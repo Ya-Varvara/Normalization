@@ -116,5 +116,3 @@ class SimpleModelDialog(QDialog):
             return response[0]
         else:
             return 0
-
-
