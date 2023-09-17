@@ -1,21 +1,53 @@
-from inversion.inversion import fit_1d_model
+from inversion.inversion import fit_1d_model, get_z_from_edi, forward_1D_MT
+from normalization.EDI import mtedi
+
+from sklearn.metrics import mean_absolute_percentage_error as mape 
+from numpy import log, abs, real, imag
+
+from PyQt5.QtWidgets import QWidget, QGridLayout
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib import cm, ticker
 
 
 class InversionModel:
-    def __init__(self, ro_init, h_init, is_fixed_ro, is_fixed_h, Z, t_list, N_iter = 10, method='CG',
-                             min_res=0.1, max_res=10000):
-        self.data_widget = None
+    def __init__(self, edi_file_path, ro_init, h_init, is_fixed_ro, is_fixed_h, component, N_iter = 10, min_res=0.1, max_res=10000):
+        self.edi_file_path = edi_file_path
+
+        self.edi = mtedi.Edi().read_edi_file(self.edi_file_path)
+
         self.ro_init = ro_init
         self.h_init = h_init
         self.is_fixed_ro = is_fixed_ro
         self.is_fixed_h = is_fixed_h
-        self.Z_obs = Z
-        self.t_list = t_list
+        self.component = component
         self.N_iter = N_iter
-        self.method = method
         self.min_res = min_res
         self.max_res = max_res
 
-        self.ro_out, self.h_out = fit_1d_model(ro_init, h_init, is_fixed_ro, is_fixed_h, Z, t_list, N_iter = 10, method='CG',
-                             min_res=0.1, max_res=10000)
+        self.Z, self.t_list = get_z_from_edi(self.edi, self.component)
+
+        self.ro_out, self.h_out = fit_1d_model(ro_init, h_init, is_fixed_ro, is_fixed_h, self.Z, self.t_list, self.N_iter, method='CG', 
+                                               min_res=self.min_res, max_res=self.max_res)
+        self.Z_inv = forward_1D_MT(self.ro_out, self.h_out, self.t_list)
+        
+        self.Z_error = mape(log(abs(self.Z)), log(abs(self.Z_inv))) * 100
+        self.Z_Re_error = mape(log(real(self.Z)), log(real(self.Z_inv))) * 100
+        self.Z_Im_error = mape(log(-imag(self.Z)), log(-imag(self.Z_inv))) * 100
+
+class InversionPlot(QWidget):
+    def __init__(self, inversion, parent=None, width=10, height=4):
+        super(InversionPlot, self).__init__()
+
+        self.inver = inversion
+        self.parent = parent
+
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
+        self.figure = Figure(figsize=(width, height), dpi=100, layout="constrained")
+        self.canvas = FigureCanvas(self.figure)
+
+        self.layout.addWidget(self.canvas)
         

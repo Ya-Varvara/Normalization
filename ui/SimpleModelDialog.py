@@ -44,7 +44,7 @@ class SimpleModelDialog(QDialog):
         column_name = 'h_init' if column else 'ro_init'
         if item.text():
             self.data[column_name][row] = float(item.text())
-        print(self.data)
+        # print(self.data)
 
     def fix_ro_h(self):
         item = self.ui.modelTableWidget.model().data(self.ui.modelTableWidget.currentIndex())
@@ -56,11 +56,11 @@ class SimpleModelDialog(QDialog):
                 self.ui.modelTableWidget.item(old_row, column).setSelected(False)
                 self.data[column_name] = [0]*len(self.data[column_name])
                 if old_row == row:
-                    print(self.data['is_fixed_h'], self.data['is_fixed_ro'])
+                    # print(self.data['is_fixed_h'], self.data['is_fixed_ro'])
                     return
             self.data[column_name][row] = 1
             self.ui.modelTableWidget.item(row, column).setSelected(True)
-        print(self.data['is_fixed_h'], self.data['is_fixed_ro'])
+        # print(self.data['is_fixed_h'], self.data['is_fixed_ro'])
 
     def open_model_file(self):
         self.file_name = self.open_dialog()
@@ -81,7 +81,7 @@ class SimpleModelDialog(QDialog):
         self.data['is_fixed_ro'] = [0]*len(ro_init)
         self.data['is_fixed_h'] = [0]*len(h_init)
 
-        print(len(ro_init), ro_init, len(h_init), h_init)
+        # print(len(ro_init), ro_init, len(h_init), h_init)
 
         self.ui.modelTableWidget.setRowCount(len(ro_init))
         for row in range(self.ui.modelTableWidget.rowCount()):
@@ -94,7 +94,7 @@ class SimpleModelDialog(QDialog):
         self.data['h_init'].append(0)
         self.data['is_fixed_ro'].append(0)
         self.data['is_fixed_h'].append(0)
-        print(self.data)
+        # print(self.data)
 
     def delete_table_row(self):
         self.ui.modelTableWidget.removeRow(self.ui.modelTableWidget.rowCount()-1)
@@ -102,7 +102,7 @@ class SimpleModelDialog(QDialog):
         self.data['h_init'] = self.data['h_init'][:-1]
         self.data['is_fixed_ro'] = self.data['is_fixed_ro'][:-1]
         self.data['is_fixed_h'] = self.data['is_fixed_h'][:-1]
-        print(self.data)
+        # print(self.data)
 
     def open_dialog(self):
         file_filter = 'Data File (*.txt)'

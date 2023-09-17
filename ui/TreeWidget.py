@@ -235,11 +235,11 @@ class TreeWidget(QWidget):
         prof.addChild(norm)
         self.parent.show_widget(norma.data_widget)
 
-    def get_checked_edi_file_paths(self):
+    def get_checked_edi_file_paths(self) -> list:
         """
         Возвращает список путей выбранных файлов
 
-        :return: List с путями к файлам или модель профиля
+        :return: List с путями к файлам
         """
         paths = []
         items = self.ui.projectTreeWidget.selectedItems()
