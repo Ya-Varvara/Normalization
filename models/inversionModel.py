@@ -1,14 +1,9 @@
-from inversion.inversion import fit_1d_model, get_z_from_edi, forward_1D_MT
+from inversion.inversion import fit_1d_model, get_z_from_edi, forward_1D_MT, calc_phase
 from normalization.EDI import mtedi
+from ui.InvertionWidget import InversionWidget
 
 from sklearn.metrics import mean_absolute_percentage_error as mape 
 from numpy import log, abs, real, imag
-
-from PyQt5.QtWidgets import QWidget, QGridLayout
-
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib import cm, ticker
 
 
 class InversionModel:
@@ -36,18 +31,5 @@ class InversionModel:
         self.Z_Re_error = mape(log(real(self.Z)), log(real(self.Z_inv))) * 100
         self.Z_Im_error = mape(log(-imag(self.Z)), log(-imag(self.Z_inv))) * 100
 
-class InversionPlot(QWidget):
-    def __init__(self, inversion, parent=None, width=10, height=4):
-        super(InversionPlot, self).__init__()
+        self.widget = InversionWidget(self)
 
-        self.inver = inversion
-        self.parent = parent
-
-        self.layout = QGridLayout()
-        self.setLayout(self.layout)
-
-        self.figure = Figure(figsize=(width, height), dpi=100, layout="constrained")
-        self.canvas = FigureCanvas(self.figure)
-
-        self.layout.addWidget(self.canvas)
-        
