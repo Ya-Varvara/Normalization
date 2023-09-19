@@ -8,6 +8,7 @@ from PyQt5.QtGui import QCursor
 from ui.base_ui.TreeWidget import Ui_Form
 
 from models.normalization_models import NormalizationProfileModel, Normalization
+from models.inversionModel import InversionModel
 from handlers.supportDialogs import choose_folder
 
 
@@ -28,7 +29,8 @@ class TreeWidget(QWidget):
 
         self.top_level_items = {'EDI files': QTreeWidgetItem([f'EDI files']),
                                 'TXT files': QTreeWidgetItem([f'TXT files']),
-                                'Profiles': QTreeWidgetItem([f'Profiles'])}
+                                'Profiles': QTreeWidgetItem([f'Profiles']),
+                                'Invertions': QTreeWidgetItem([f'Invertions'])}
 
         # словарь файлов .EDI вида {filepath: QTreeWidgetItem}
         self.edi_files = {}
@@ -38,6 +40,9 @@ class TreeWidget(QWidget):
 
         # словарь созданных профилей вида {NormalizationProfileModel: QTreeWidgetItem}
         self.profiles = {}
+
+        # словарь инверсий {InversionModel: QTreeWidgetItem}
+        self.invertions = {}
 
         self.ui.projectTreeWidget.setHeaderLabel('Дерево проекта')
         self.ui.projectTreeWidget.setSelectionMode(QAbstractItemView.MultiSelection)
@@ -228,6 +233,16 @@ class TreeWidget(QWidget):
             profile_item.addChild(norm)
 
         self.parent.show_widget(profile_model.data_widget)
+
+    def add_inversion_model(self, invertion: InversionModel):
+        parent_item = self.top_level_items['Invertions']
+
+        profile_item = QTreeWidgetItem([f'Invertion {len(self.invertions) + 1}'])
+        self.profiles[invertion] = profile_item
+        parent_item.addChild(profile_item)
+
+        self.parent.show_widget(invertion.data_widget)
+
 
     def add_normalization_to_profile(self, profile: NormalizationProfileModel, norma: Normalization):
         prof = self.profiles[profile]

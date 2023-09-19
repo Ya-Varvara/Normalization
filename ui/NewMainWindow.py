@@ -9,6 +9,7 @@ from ui.Inversion1DControlWidget import Inversion1DControlWidget
 from ui.InversionTypeWidget import InversionTypeWidget
 
 from models.normalization_models import NormalizationProfileModel
+from models.inversionModel import InversionModel
 
 from handlers.supportDialogs import open_file_dialog
 
@@ -57,7 +58,8 @@ class MainWindow(QMainWindow):
         edi_file = self.tree.get_checked_edi_file_paths()[0]
         print('invertion')
         print(inversion_component, n_iteration, min_res, max_res, ro_init, h_init, is_fixed_ro, is_fixed_h)
-
+        inv = InversionModel(edi_file, ro_init, h_init, is_fixed_ro, is_fixed_h, inversion_component, n_iteration, min_res, max_res)
+        self.tree.add_inversion_model(inv)
 
     def open_edi_files(self, file_paths):
         self.tree.add_edi_file(file_paths)
@@ -73,5 +75,7 @@ class MainWindow(QMainWindow):
         if widget not in self.widgets:
             self.add_widget(widget)
         self.ui.mainStackedWidget.setCurrentWidget(widget)
+        if isinstance(widget.parent, InversionModel):
+            return
         self.normalization_control.set_visibility_buttons_checked(widget.visibility)
 

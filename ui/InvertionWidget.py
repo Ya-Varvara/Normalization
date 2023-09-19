@@ -2,6 +2,8 @@ from ui.base_ui.InvertionWidget import Ui_Form
 
 from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QAbstractItemView, QGridLayout
 
+from inversion.inversion import calc_phase
+
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import cm, ticker
@@ -17,10 +19,16 @@ class InversionWidget(QWidget):
         self.ui.setupUi(self)
 
         self.inversion = inversion
+        self.parent = inversion
 
-        self.ui.widget = InversionPlot(self.inversion, self)
+        self.inv_plot = InversionPlot(self.inversion, self)
+        self.ui.stackedWidget.addWidget(self.inv_plot)
+        self.ui.stackedWidget.setCurrentWidget(self.inv_plot)
 
+        self.ui.tableWidget.setColumnCount(2)
+        self.ui.tableWidget.setRowCount(len(self.inversion.ro_out))
         self.ui.tableWidget.setHorizontalHeaderLabels(['Res', 'H'])
+        print(self.inversion.ro_out)
 
         for row in range(len(self.inversion.ro_out)):
             self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(self.inversion.ro_out[row])))
@@ -66,20 +74,23 @@ class InversionPlot(QWidget):
 
 
         ax5 = self.figure.add_subplot(self.gs[1, :])
-        self.plot_rho(ax5, self.inver.h_out, self.inver.ro_out)
-        self.plot_rho(ax5, self.inver.h_init, self.inver.ro_init)
+        self.plot_rho(ax5, self.inver.h_out[0:len(self.inver.h_out)-1], self.inver.ro_out)
+        self.plot_rho(ax5, self.inver.h_init[0:len(self.inver.h_out)-1], self.inver.ro_init)
         self.plot_rho(ax5, self.inver.h_out[0:len(self.inver.h_out)-1], self.inver.ro_out)
         ax5.grid(True)
         ax5.legend(['Inversion'])
         ax5.set_title(r'$\rho$')
+        self.canvas.draw()
 
-    def plot_rho(ax, h, rho, max_depth=None):
+    def plot_rho(self, ax, h, rho, max_depth=None):
         """
         Функция, предназначенная для визуализации 1D разреза сопротивлений.
         На вход принимает мощности слоев и их сопротивления (мощностей, как всегда, на одну меньше, чем сопротивлений)
         На выходе рисует график, на котором по горизонтали откладывается глубина, а по вертикали сопротивления
         """
-
+        print('---', ax)
+        print(h)
+        print(rho)
         hp = zeros(len(rho) * 2)
         rhop = zeros(len(rho) * 2)
 
@@ -92,10 +103,10 @@ class InversionPlot(QWidget):
 
         ax.loglog(hp, rhop, linewidth=1)
         ax.grid(True)
-        ax.xlabel('H')
-        ax.ylabel(r'$\rho$')
+        ax.set_xlabel('H')
+        ax.set_ylabel(r'$\rho$')
 
-        ax.xlim([10 ** floor(log10(hp[1]) - 1), 10 ** ceil(log10(hp[-1]))])
-        ax.ylim([10 ** floor(log10(min(rho))), 10 ** ceil(log10(max(rho)))])       
+        ax.set_xlim([10 ** floor(log10(hp[1]) - 1), 10 ** ceil(log10(hp[-1]))])
+        ax.set_ylim([10 ** floor(log10(min(rho))), 10 ** ceil(log10(max(rho)))])       
 
 

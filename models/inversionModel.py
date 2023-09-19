@@ -10,7 +10,9 @@ class InversionModel:
     def __init__(self, edi_file_path, ro_init, h_init, is_fixed_ro, is_fixed_h, component, N_iter = 10, min_res=0.1, max_res=10000):
         self.edi_file_path = edi_file_path
 
-        self.edi = mtedi.Edi().read_edi_file(self.edi_file_path)
+        self.edi = mtedi.Edi()
+        self.edi.read_edi_file(self.edi_file_path)
+        print(self.edi)
 
         self.ro_init = ro_init
         self.h_init = h_init
@@ -27,9 +29,13 @@ class InversionModel:
                                                min_res=self.min_res, max_res=self.max_res)
         self.Z_inv = forward_1D_MT(self.ro_out, self.h_out, self.t_list)
         
-        self.Z_error = mape(log(abs(self.Z)), log(abs(self.Z_inv))) * 100
-        self.Z_Re_error = mape(log(real(self.Z)), log(real(self.Z_inv))) * 100
-        self.Z_Im_error = mape(log(-imag(self.Z)), log(-imag(self.Z_inv))) * 100
+        # self.Z_error = mape(log(abs(self.Z)), log(abs(self.Z_inv))) * 100
+        # self.Z_Re_error = mape(log(real(self.Z)), log(real(self.Z_inv))) * 100
+        # self.Z_Im_error = mape(log(-imag(self.Z)), log(-imag(self.Z_inv))) * 100
 
-        self.widget = InversionWidget(self)
+        self.Z_error = 1
+        self.Z_Re_error = 2
+        self.Z_Im_error = 3
+
+        self.data_widget = InversionWidget(self)
 

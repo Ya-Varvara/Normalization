@@ -6,8 +6,6 @@ import pandas as pd
 from scipy.optimize import minimize
 from scipy.optimize import basinhopping
 from scipy.optimize import dual_annealing
-
-from sklearn.metrics import mean_absolute_percentage_error as mape
 import mtpy.core.edi as mtedi
 
 
@@ -31,7 +29,7 @@ def forward_1D_MT(rho, h, t):
 
     mu0 = 4 * np.pi * 1e-7
 
-    for m in range(len(h), 0, -1):
+    for m in range(len(h)-1, 0, -1):
         k = np.sqrt(-1j * w * mu0 / rho[m - 1])
 
         A = np.sqrt(rho[m - 1] / rho[m])
