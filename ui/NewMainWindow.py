@@ -55,7 +55,11 @@ class MainWindow(QMainWindow):
     def do_inversion(self):
         mesh_data, inversion_component, n_iteration, min_res, max_res = self.inversion_1d_control.get_inversion_data()
         ro_init, h_init, is_fixed_ro, is_fixed_h = tuple(mesh_data.values())
-        edi_file = self.tree.get_checked_edi_file_paths()[0]
+        edi_files = self.tree.get_checked_edi_file_paths()
+        if edi_files:
+            edi_file = edi_files[0]
+        else: 
+            return
         # print('invertion')
         # print(inversion_component, n_iteration, min_res, max_res, ro_init, h_init, is_fixed_ro, is_fixed_h)
         inv = InversionModel(edi_file, ro_init, h_init, is_fixed_ro, is_fixed_h, inversion_component, n_iteration, min_res, max_res)
@@ -76,6 +80,9 @@ class MainWindow(QMainWindow):
             self.add_widget(widget)
         self.ui.mainStackedWidget.setCurrentWidget(widget)
         if isinstance(widget.parent, InversionModel):
+            self.ui.tabWidget.setCurrentWidget(self.inversion_type)
             return
-        self.normalization_control.set_visibility_buttons_checked(widget.visibility)
+        else:
+            self.normalization_control.set_visibility_buttons_checked(widget.visibility)
+            self.ui.tabWidget.setCurrentWidget(self.normalization_control)
 

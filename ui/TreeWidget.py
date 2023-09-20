@@ -145,6 +145,19 @@ class TreeWidget(QWidget):
 
         self.parent.show_widget(profile_item.data_widget)
 
+    def show_inversion(self, item=None):
+        if item is None:
+            item = self.ui.projectTreeWidget.currentItem()
+        inv_item = None
+        for i, inv in self.invertions.items():
+            if item == inv:
+                inv_item = i
+                break
+        if inv_item is None:
+            return
+
+        self.parent.show_widget(inv_item.data_widget)
+
     def tree_item_clicked(self):
         current_item = self.ui.projectTreeWidget.currentItem()
         print(current_item.text(0))
@@ -157,6 +170,8 @@ class TreeWidget(QWidget):
                 self.show_normalization(current_item)
             elif 'Data' in current_item.text(0):
                 self.show_profile(current_item.parent())
+            elif 'Inversion' in current_item.text(0):
+                self.show_inversion(current_item)
         else:
             for item in self.ui.projectTreeWidget.selectedItems():
                 if item.parent() != self.top_level_items['EDI files']:
@@ -238,7 +253,7 @@ class TreeWidget(QWidget):
         parent_item = self.top_level_items['Invertions']
 
         profile_item = QTreeWidgetItem([f'Invertion {len(self.invertions) + 1}'])
-        self.profiles[invertion] = profile_item
+        self.invertions[invertion] = profile_item
         parent_item.addChild(profile_item)
 
         self.parent.show_widget(invertion.data_widget)
@@ -319,6 +334,7 @@ class TreeWidget(QWidget):
             self.parent.remove_widgets(widgets)
 
     def find_model_by_widget(self, widget):
+        # if isinstance()
         for profile in self.profiles.keys():
             if profile.data_widget == widget:
                 return profile
