@@ -24,7 +24,7 @@ class Inversion1DControlWidget(QWidget):
         self.ui.sourceModel_Btn.setDisabled(True)
         self.ui.addData_Btn.setDisabled(True)
         self.ui.equation_Btn.setDisabled(True)
-        self.ui.saveFileBtn.setDisabled(True)
+        # self.ui.saveFileBtn.setDisabled(True)
 
         for data in self.inversion_data:
             self.ui.inversionDataComboBox.addItem(data)

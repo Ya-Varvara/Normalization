@@ -194,7 +194,7 @@ def fit_1d_model(ro_init, h_init, is_fixed_rho, is_fixed_h, Z_obs, t_list,
 
     for n in range(N_iter):
         res = minimize(forward_rmse, sect, args=(is_fixed, init_sect, t_list, Z_obs),
-                       method=method, options={'maxiter': 50})
+                       method=method, options={'maxiter': 100})
         print(res)
 
         out_sect = res.x

@@ -30,7 +30,7 @@ class TreeWidget(QWidget):
         self.top_level_items = {'EDI files': QTreeWidgetItem([f'EDI files']),
                                 'TXT files': QTreeWidgetItem([f'TXT files']),
                                 'Profiles': QTreeWidgetItem([f'Profiles']),
-                                'Invertions': QTreeWidgetItem([f'Invertions'])}
+                                'Inversions': QTreeWidgetItem([f'Inversions'])}
 
         # словарь файлов .EDI вида {filepath: QTreeWidgetItem}
         self.edi_files = {}
@@ -42,7 +42,7 @@ class TreeWidget(QWidget):
         self.profiles = {}
 
         # словарь инверсий {InversionModel: QTreeWidgetItem}
-        self.invertions = {}
+        self.inversions = {}
 
         self.ui.projectTreeWidget.setHeaderLabel('Дерево проекта')
         self.ui.projectTreeWidget.setSelectionMode(QAbstractItemView.MultiSelection)
@@ -149,7 +149,7 @@ class TreeWidget(QWidget):
         if item is None:
             item = self.ui.projectTreeWidget.currentItem()
         inv_item = None
-        for i, inv in self.invertions.items():
+        for i, inv in self.inversions.items():
             if item == inv:
                 inv_item = i
                 break
@@ -249,14 +249,14 @@ class TreeWidget(QWidget):
 
         self.parent.show_widget(profile_model.data_widget)
 
-    def add_inversion_model(self, invertion: InversionModel):
-        parent_item = self.top_level_items['Invertions']
+    def add_inversion_model(self, inversion: InversionModel):
+        parent_item = self.top_level_items['Inversions']
 
-        profile_item = QTreeWidgetItem([f'Invertion {len(self.invertions) + 1}'])
-        self.invertions[invertion] = profile_item
+        profile_item = QTreeWidgetItem([f'Inversion {len(self.inversions) + 1}'])
+        self.inversions[inversion] = profile_item
         parent_item.addChild(profile_item)
 
-        self.parent.show_widget(invertion.data_widget)
+        self.parent.show_widget(inversion.data_widget)
 
 
     def add_normalization_to_profile(self, profile: NormalizationProfileModel, norma: Normalization):
@@ -292,6 +292,21 @@ class TreeWidget(QWidget):
 
         if 'Profile' in item.text(0).split():
             return list(self.profiles.keys())[list(self.profiles.values()).index(item)]
+        return None
+
+    def get_selected_inversion_model(self) -> [InversionModel | None]:
+        """
+        Возвращает выбранную модель инверсии. Если модель не выбрана, возвращает None
+
+        :return: Модель инверсии
+        """
+        item = self.ui.projectTreeWidget.currentItem()
+
+        while item.parent() and item.parent() != self.top_level_items['Inversions']:
+            item = item.parent()
+
+        if 'Inversion' in item.text(0).split():
+            return list(self.inversions.keys())[list(self.inversions.values()).index(item)]
         return None
 
     def clear_selection(self):

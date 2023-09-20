@@ -11,7 +11,9 @@ from ui.InversionTypeWidget import InversionTypeWidget
 from models.normalization_models import NormalizationProfileModel
 from models.inversionModel import InversionModel
 
-from handlers.supportDialogs import open_file_dialog
+from inversion.inversion import export_z_rho
+
+from handlers.supportDialogs import open_file_dialog, save_file_dialog
 
 
 class MainWindow(QMainWindow):
@@ -19,6 +21,8 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        self.setWindowTitle("EMFORGE")
 
         self.widgets = []
 
@@ -36,6 +40,7 @@ class MainWindow(QMainWindow):
         self.inversion_1d_control.ui.openFileBtn.clicked.connect(self.open_files)
 
         self.inversion_1d_control.ui.goInversion_Btn.clicked.connect(self.do_inversion)
+        self.inversion_1d_control.ui.saveFileBtn.clicked.connect(self.save_inversion)
 
     def open_files(self):
         file_paths = open_file_dialog()
@@ -64,6 +69,19 @@ class MainWindow(QMainWindow):
         # print(inversion_component, n_iteration, min_res, max_res, ro_init, h_init, is_fixed_ro, is_fixed_h)
         inv = InversionModel(edi_file, ro_init, h_init, is_fixed_ro, is_fixed_h, inversion_component, n_iteration, min_res, max_res)
         self.tree.add_inversion_model(inv)
+
+    def save_inversion(self):
+        model = self.tree.get_selected_inversion_model()
+        if model is None:
+            return
+        print(model)
+        file_path = save_file_dialog()
+        if file_path is None:
+            return
+
+        export_z_rho(model.h_out[:-1], model.ro_out, file_path)
+
+
 
     def open_edi_files(self, file_paths):
         self.tree.add_edi_file(file_paths)
