@@ -11,7 +11,6 @@ from matplotlib import cm, ticker
 from numpy import log, abs, real, imag, zeros, cumsum, sum, floor, ceil, log10, min, max
 
 
-
 class InversionWidget(QWidget):
     def __init__(self, inversion):
         super(InversionWidget, self).__init__()
@@ -72,7 +71,6 @@ class InversionPlot(QWidget):
         ax2.legend([r'$\phi$ True', r'$\phi$ Inversion'])
         ax2.set_title(r'$\phi$')
 
-
         ax5 = self.figure.add_subplot(self.gs[1, :])
         self.plot_rho(ax5, self.inver.h_out[0:len(self.inver.h_out)-1], self.inver.ro_out)
         self.plot_rho(ax5, self.inver.h_init[0:len(self.inver.h_out)-1], self.inver.ro_init)
@@ -88,9 +86,6 @@ class InversionPlot(QWidget):
         На вход принимает мощности слоев и их сопротивления (мощностей, как всегда, на одну меньше, чем сопротивлений)
         На выходе рисует график, на котором по горизонтали откладывается глубина, а по вертикали сопротивления
         """
-        print('---', ax)
-        print(h)
-        print(rho)
         hp = zeros(len(rho) * 2)
         rhop = zeros(len(rho) * 2)
 
@@ -108,5 +103,3 @@ class InversionPlot(QWidget):
 
         ax.set_xlim([10 ** floor(log10(hp[1]) - 1), 10 ** ceil(log10(hp[-1]))])
         ax.set_ylim([10 ** floor(log10(min(rho))), 10 ** ceil(log10(max(rho)))])       
-
-

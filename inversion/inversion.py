@@ -8,7 +8,6 @@ from scipy.optimize import basinhopping
 from scipy.optimize import dual_annealing
 import mtpy.core.edi as mtedi
 
-
 mu0 = 4 * np.pi * 1e-7
 
 
@@ -17,12 +16,12 @@ def calc_effective_Z(z):
 
 
 def forward_1D_MT(rho, h, t):
-    """
+    '''
     Функция для решения 1D прямой задачи МТЗ.
     На вход принимает массив сопротивлений слоев и их мощностей (мощностей должно быть на одну меньше, чем сопротивлений),
     а также периодов.
-    На выходе возвращает массив комплексныx значений импеданса
-    """
+    На выходе возвращает массив комплексных значений импеданса
+    '''
 
     w = 2 * np.pi / t  # круговая частота
     R = np.ones(len(t))
@@ -42,27 +41,27 @@ def forward_1D_MT(rho, h, t):
 
 
 def calc_app_rho(Z, w_list):
-    """
+    '''
     Функция, вычисляющая кажущееся сопротивления по значениям импеданса и соответствующих круговых частот
-    """
+    '''
 
     return np.abs(Z) ** 2 / 2 / np.pi / w_list / mu0
 
 
 def calc_phase(Z):
-    """
+    '''
     Функция, вычисляющая фазу по комплексным значениям импеданса
-    """
+    '''
 
     return np.arctan2(np.imag(Z), np.real(Z)) * 180 / np.pi
 
 
 def plot_rho(h, rho, max_depth=None):
-    """
+    '''
     Функция, предназначенная для визуализации 1D разреза сопротивлений.
     На вход принимает мощности слоев и их сопротивления (мощностей, как всегда, на одну меньше, чем сопротивлений)
     На выходе рисует график, на котором по горизонтали откладывается глубина, а по вертикали сопротивления
-    """
+    '''
 
     hp = np.zeros(len(rho) * 2)
     rhop = np.zeros(len(rho) * 2)
@@ -74,7 +73,7 @@ def plot_rho(h, rho, max_depth=None):
     rhop[::2] = rho
     rhop[1::2] = rho
 
-    plt.loglog(hp, rhop, linewidth=1)
+    plt.loglog(hp, rhop, linewidth=3)
     plt.grid(True)
     plt.xlabel('H')
     plt.ylabel(r'$\rho$')
@@ -83,10 +82,34 @@ def plot_rho(h, rho, max_depth=None):
     plt.ylim([10 ** np.floor(np.log10(np.min(rho))), 10 ** np.ceil(np.log10(np.max(rho)))])
 
 
+def export_z_rho(h, rho, fname, max_depth=None):
+    '''
+    Функция, предназначенная для визуализации 1D разреза сопротивлений.
+    На вход принимает мощности слоев и их сопротивления (мощностей, как всегда, на одну меньше, чем сопротивлений)
+    На выходе рисует график, на котором по горизонтали откладывается глубина, а по вертикали сопротивления
+    '''
+
+    hp = np.zeros(len(rho) * 2)
+    rhop = np.zeros(len(rho) * 2)
+
+    hp[1:-1:2] = np.cumsum(h)
+    hp[-1] = np.sum(h) * 1.1 if max_depth is None else max_depth
+    hp[2::2] = np.cumsum(h)
+
+    rhop[::2] = rho
+    rhop[1::2] = rho
+
+    out_data = np.empty([len(hp), 2])
+    out_data[:, 0] = hp
+    out_data[:, 1] = rhop
+
+    np.savetxt(fname, out_data, comments='', delimiter='\t', header='z\trho')
+
+
 def forward_rmse(section, is_fixed,
                  section_copy,
                  times, obs_Z):
-    """
+    '''
     Вспомогательная функция для инверсии с помощью оптимизаторов из scipy.
     На вход принимает:
     - массив свойств разреза [сопротивление1, мощность1, сопротивление2, мощность2 ...],
@@ -96,7 +119,8 @@ def forward_rmse(section, is_fixed,
     все без разбора)
     - периоды
     - наблюденные значения импеданса
-    """
+
+    '''
 
     rho = section_copy[0::2]
     h = section_copy[1::2]
@@ -141,7 +165,7 @@ def get_z_from_edi(edi, component='eff'):
 
 def fit_1d_model(ro_init, h_init, is_fixed_rho, is_fixed_h, Z_obs, t_list,
                  N_iter=10, method='CG', min_res=1e-9, max_res=1e50, min_h=1e-9, max_h=1e50):
-    """
+    '''
     Функция для автоматического подбора (инверсии) 1D разреза сопротивлений.
     На вход принимает:
     - массив стартовых значений сопротивлений
@@ -154,7 +178,8 @@ def fit_1d_model(ro_init, h_init, is_fixed_rho, is_fixed_h, Z_obs, t_list,
     - метод оптимизации (см scipy.optimize.minimize)
 
     На выходе выдает массив подобранных сопротивлений и массив подобранных мощностей
-    """
+    '''
+    # print(ro_init, h_init, is_fixed_rho, is_fixed_h, Z_obs, t_list, N_iter, method, min_res, max_res, min_h, max_h)
 
     sect = np.empty(len(ro_init) + len(h_init))
     sect[::2] = ro_init
@@ -170,6 +195,7 @@ def fit_1d_model(ro_init, h_init, is_fixed_rho, is_fixed_h, Z_obs, t_list,
     for n in range(N_iter):
         res = minimize(forward_rmse, sect, args=(is_fixed, init_sect, t_list, Z_obs),
                        method=method, options={'maxiter': 50})
+        print(res)
 
         out_sect = res.x
         new_sect = sect.copy()

@@ -12,7 +12,7 @@ class InversionModel:
 
         self.edi = mtedi.Edi()
         self.edi.read_edi_file(self.edi_file_path)
-        print(self.edi)
+        # print(self.edi)
 
         self.ro_init = ro_init
         self.h_init = h_init
@@ -24,9 +24,11 @@ class InversionModel:
         self.max_res = max_res
 
         self.Z, self.t_list = get_z_from_edi(self.edi, self.component)
+        print(self.t_list)
+        print(self.Z)
 
-        self.ro_out, self.h_out = fit_1d_model(ro_init, h_init, is_fixed_ro, is_fixed_h, self.Z, self.t_list, self.N_iter, method='CG', 
-                                               min_res=self.min_res, max_res=self.max_res)
+        self.ro_out, self.h_out = fit_1d_model(ro_init, h_init, is_fixed_ro, is_fixed_h, self.Z, self.t_list,
+                                               self.N_iter, method='CG', min_res=self.min_res, max_res=self.max_res)
         self.Z_inv = forward_1D_MT(self.ro_out, self.h_out, self.t_list)
         
         # self.Z_error = mape(log(abs(self.Z)), log(abs(self.Z_inv))) * 100

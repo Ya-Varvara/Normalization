@@ -56,8 +56,8 @@ class MainWindow(QMainWindow):
         mesh_data, inversion_component, n_iteration, min_res, max_res = self.inversion_1d_control.get_inversion_data()
         ro_init, h_init, is_fixed_ro, is_fixed_h = tuple(mesh_data.values())
         edi_file = self.tree.get_checked_edi_file_paths()[0]
-        print('invertion')
-        print(inversion_component, n_iteration, min_res, max_res, ro_init, h_init, is_fixed_ro, is_fixed_h)
+        # print('invertion')
+        # print(inversion_component, n_iteration, min_res, max_res, ro_init, h_init, is_fixed_ro, is_fixed_h)
         inv = InversionModel(edi_file, ro_init, h_init, is_fixed_ro, is_fixed_h, inversion_component, n_iteration, min_res, max_res)
         self.tree.add_inversion_model(inv)
 
