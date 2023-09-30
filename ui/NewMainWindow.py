@@ -104,3 +104,11 @@ class MainWindow(QMainWindow):
             self.normalization_control.set_visibility_buttons_checked(widget.visibility)
             self.ui.tabWidget.setCurrentWidget(self.normalization_control)
 
+    def remove_widgets(self, widgets):
+        for widget in widgets:
+            self.ui.mainStackedWidget.removeWidget(widget)
+        if self.ui.mainStackedWidget.count() > 2:
+            current_widget = self.ui.mainStackedWidget.currentWidget()
+            self.normalization_control.set_visibility_buttons_checked(current_widget.visibility)
+
+
