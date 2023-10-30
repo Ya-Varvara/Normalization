@@ -7,11 +7,11 @@ from PyQt5.QtGui import QCursor
 
 from ui.base_ui.TreeWidget import Ui_Form
 
-from models.normalization_models import NormalizationProfileModel, Normalization
-from models.inversionModel import InversionModel
+from models.NormalizationModel import NormalizationProfileModel, Normalization
+from models.InversionModel import InversionModel
 from handlers.supportDialogs import choose_folder
 
-from models.ediFileClass import EdiFileData, FrequencyMT1DFileData
+from models.ImportFileModels import EdiFileData, FrequencyMT1DFileData
 
 
 class TreeWidget(QWidget):
@@ -65,7 +65,6 @@ class TreeWidget(QWidget):
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_popMenu)
-
     # end def __init__
 
     def init_popMenu_for_profiles(self):
@@ -76,7 +75,6 @@ class TreeWidget(QWidget):
         deleteProfileAction = QAction('Delete profile', self)
         deleteProfileAction.triggered.connect(self.remove_profile_model)
         self.profiles_popMenu.addAction(deleteProfileAction)
-
     # end def init_popMenu_for_profiles
 
     def init_popMenu_for_normalizations(self):
@@ -96,7 +94,6 @@ class TreeWidget(QWidget):
         createProfileAction = QAction('Create profile', self)
         createProfileAction.triggered.connect(self.create_profile)
         self.files_popMenu.addAction(createProfileAction)
-
     # end def init_popMenu_for_files
 
     def show_popMenu(self):

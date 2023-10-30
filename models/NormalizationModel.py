@@ -1,16 +1,14 @@
-import os
-
-from normalization.EDI import read_edi_files, mtedi, normalize_rho
+from normalization.EDI import mtedi, normalize_rho
 from ui.DataWidget import MTComponent
 
-from models.ediFileClass import EdiFileData
+from models.ImportFileModels import EdiFileData
 
 
 class NormalizationProfileModel:
     """
     Класс профиля
 
-    Инициализация -> дается список путей к файлам EDI, внутри это читается и сохраняется
+    Инициализация -> дается список объектов EdiFileData внутри это читается и сохраняется
     """
 
     def __init__(self, edi_files: list[EdiFileData], label=None):
@@ -29,17 +27,15 @@ class NormalizationProfileModel:
         self.norm_id += 1
         return norm
 
-    def add_edi(self, file_path: list[str]):
-        for path in file_path:
-            edi_file = EdiFileData(path)
+    def add_edi(self, files: list[EdiFileData]):
+        """
+        Добавление файла Edi к профилю
+        :param files:
+        :return:
+        """
+        for edi_file in files:
             self.edi_files.append(edi_file)
             self.edis.append(edi_file.edi)
-
-    # def delete_edi(self, file_name):
-    #     for file in self.file_paths:
-    #         if file_name == os.path.basename(file):
-    #             self.file_paths.remove(file)
-    #             break
 
     def delete_normalization(self, norm_id):
         del self.normalizations[norm_id]
@@ -47,7 +43,11 @@ class NormalizationProfileModel:
     def create_widget(self):
         self.data_widget = MTComponent(self, self.edis)
 
-    def get_all_normalized_edi_files(self):
+    def get_all_normalized_edi_files(self) -> [EdiFileData]:
+        """
+        Возвращает все Edi объекты для всех нормализаций
+        :return: список EdiFileData
+        """
         edi_files = []
         for norm in self.normalizations.values():
             edi_files.extend(norm.result_edi_files)
@@ -55,6 +55,9 @@ class NormalizationProfileModel:
 
 
 class Normalization:
+    """
+    Класс нормализации профиля
+    """
     def __init__(self,
                  edis: list[mtedi.Edi],
                  mt_points: int,
@@ -66,36 +69,42 @@ class Normalization:
         self.period = period
         self.edi_files = edi_files
         self.tree_label = label
+        self.period_index = None
+
+        self.result_edis = None
+        self.result_edi_files = []
+
+        self.data_widget = None
 
         self.inversions = []
 
+        self.normalize()
+
+    def normalize(self):
         periods = self.edis[0].Z.res_xy
-        if periods[0] >= period:
+        if periods[0] >= self.period:
             self.period_index = 0
-        elif periods[-1] <= period:
+        elif periods[-1] <= self.period:
             self.period_index = len(periods) - 1
         else:
             self.period_index = 0
             for i, x in enumerate(periods):
-                if x <= period:
+                if x <= self.period:
                     self.period_index = i
                 else:
                     break
 
         self.result_edis = normalize_rho(self.edis, self.period_index, self.mt_points)
-        label = self.tree_label.split()[-1]
-        self.result_edi_files = []
+        norm_id = self.tree_label.split()[-1]
+
         for i, edi in enumerate(self.result_edis):
             edi_file_data = EdiFileData()
             edi_file_data.edi = edi
-            edi_file_data.tree_label = f'norm_{label}_{self.edi_files[i].tree_label}'
+            edi_file_data.tree_label = f'norm_{norm_id}_{self.edi_files[i].tree_label}'
             edi_file_data.file_path = self.edi_files[i].file_path
             self.result_edi_files.append(edi_file_data)
-        self.data_widget = MTComponent(self, self.result_edis)
 
-    # def save_results(self, dir_path):
-    #     for i, edi_file in enumerate(self.result_edi_files):
-    #         edi_file.edi.write_edi_file(f'{dir_path}/{edi_file.tree_label}.edi')
+        self.data_widget = MTComponent(self, self.result_edis)
 
     def add_inversion(self, inv):
         self.inversions.append(inv)
@@ -111,7 +120,6 @@ class Normalization:
             target_file_path = f'{target_folder_path}/{edi_file.tree_label}.edi'
             source_file_path = edi_file.file_path
             edi_file.edi.write_edi_file(target_file_path)
-
 
             with open(source_file_path, 'r') as source_file:
                 source_lines = source_file.readlines()[:15]

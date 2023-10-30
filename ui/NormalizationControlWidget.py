@@ -23,8 +23,6 @@ class NormalizationControlWidget(QWidget):
             self.ui.effBtn_phaseGB: 'PHI Eff'
         }
 
-        # self.ui.saveFileBtn.setDisabled(True)
-
         self.ui.goNormalizationBtn.clicked.connect(self.check_input)
         self.ui.xyBtn_resultGB.clicked.connect(self.change_visible)
         self.ui.yxBtn_resultGB.clicked.connect(self.change_visible)
@@ -38,7 +36,6 @@ class NormalizationControlWidget(QWidget):
         self.ui.profileComboBox.showPopup = self.update_combobox
         self.ui.saveNormComboBox.showPopup = self.update_save_norm_combobox
         self.ui.saveProfComboBox.showPopup = self.update_save_prof_combobox
-
 
     def check_input(self):
         try:

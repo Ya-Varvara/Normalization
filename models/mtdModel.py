@@ -1,9 +1,11 @@
 from mtd.mtd import MT1D
 
-# from ui.ModelPlotWidget import MTDPlotWidget, ModelPlotWidget
-# from ui.SimpleModelWidget import SimpleModelWidget
+from ui.modelDataWidgets.mtdDataWidget import MTDPlotWidget, ModelPlotWidget
+from ui.SimpleModelWidget import SimpleModelWidget
 
-from models.ediFileClass import FrequencyMT1DFileData
+from models.ImportFileModels import FrequencyMT1DFileData
+
+
 # ============ Parent Classes ====================================
 class Method:
     def __init__(self):
@@ -15,12 +17,12 @@ class Method:
 
 
 class OneColumnModel:
-    def __init__(self, Ro=None, H=None, freq=None):
+    def __init__(self, Ro=None, H=None, freq=None, label=None):
         self.Ro = Ro
         self.H = H
         self.freq_data = FrequencyMT1DFileData(data=freq)
         self.methods = {}
-        self.tree_label = None
+        self.tree_label = label
 
     def calculate_mt1d(self):
         self.methods['mt1d'] = mtdMethod((self.freq_data, self.Ro, self.H))
@@ -139,6 +141,8 @@ class Point(OneColumnModel):
 
     def calculate_mt1d(self):
         self.methods['mt1d'] = mtdMethod((self.parent.freq_data, self.Ro, self.H))
+
+
 # end class Point
 
 
@@ -155,4 +159,3 @@ class SimpleModel(OneColumnModel):
     def init_widget(self):
         self.data_widget = SimpleModelWidget(self)
 # end class SimpleModel
-

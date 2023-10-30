@@ -3,8 +3,6 @@ from PyQt5.QtWidgets import QMainWindow
 from ui.base_ui.MainWindow import Ui_MainWindow
 from ui.TreeWidget import TreeWidget
 
-from models.normalization_models import NormalizationProfileModel
-
 from handlers.supportDialogs import open_file_dialog
 
 

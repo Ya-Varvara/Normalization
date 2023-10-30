@@ -1,10 +1,11 @@
 from handlers.supportDialogs import choose_folder
-from models.inversionModel import InversionModel
+from models.InversionModel import InversionModel
+
 from ui.base_ui.Inversion1DControlWidget import Ui_Form
+from ui.SimpleModelDialog import SimpleModelDialog
+
 from PyQt5.QtWidgets import QWidget, QComboBox, qApp
 from PyQt5 import QtWidgets
-
-from ui.SimpleModelDialog import SimpleModelDialog
 
 
 class Inversion1DControlWidget(QWidget):

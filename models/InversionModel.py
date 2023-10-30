@@ -1,5 +1,4 @@
-from inversion.inversion import fit_1d_model, get_z_from_edi, forward_1D_MT, calc_phase, export_z_rho
-from normalization.EDI import mtedi
+from inversion.inversion import fit_1d_model, get_z_from_edi, forward_1D_MT, export_z_rho
 from ui.InvertionWidget import InversionWidget
 
 from sklearn.metrics import mean_absolute_percentage_error as mape 
@@ -10,7 +9,7 @@ class InversionModel:
     def __init__(self,
                  edi_file, ro_init, h_init,
                  is_fixed_ro, is_fixed_h, component,
-                 N_iter = 10,
+                 N_iter=10,
                  min_res=0.1,
                  max_res=10000,
                  label=None):
@@ -18,7 +17,6 @@ class InversionModel:
 
         self.edi = self.edi_file.edi
         self.tree_label = label
-        # print(self.edi)
 
         self.ro_init = ro_init
         self.h_init = h_init
@@ -35,13 +33,13 @@ class InversionModel:
                                                self.N_iter, method='CG', min_res=self.min_res, max_res=self.max_res)
         self.Z_inv = forward_1D_MT(self.ro_out, self.h_out, self.t_list)
         
-        # self.Z_error = mape(log(abs(self.Z)), log(abs(self.Z_inv))) * 100
-        # self.Z_Re_error = mape(log(real(self.Z)), log(real(self.Z_inv))) * 100
-        # self.Z_Im_error = mape(log(-imag(self.Z)), log(-imag(self.Z_inv))) * 100
+        self.Z_error = mape(log(abs(self.Z)), log(abs(self.Z_inv))) * 100
+        self.Z_Re_error = mape(log(real(self.Z)), log(real(self.Z_inv))) * 100
+        self.Z_Im_error = mape(log(-imag(self.Z)), log(-imag(self.Z_inv))) * 100
 
-        self.Z_error = 1
-        self.Z_Re_error = 2
-        self.Z_Im_error = 3
+        # self.Z_error = 1
+        # self.Z_Re_error = 2
+        # self.Z_Im_error = 3
 
         self.data_widget = InversionWidget(self)
 

@@ -3,6 +3,9 @@ from normalization.EDI import read_edi_files
 
 
 class FileData:
+    """
+    Базовый класс для любого файла, который мы импортируем
+    """
     def __init__(self, file_path=None, data=None):
         self.file_path = file_path
         if file_path:
@@ -13,7 +16,15 @@ class FileData:
 
 
 class EdiFileData(FileData):
+    """
+    Класс для Edi файла
+    """
     def __init__(self, file_path=None, data=None):
+        """
+
+        :param file_path: путь к файлу
+        :param data: данные файла
+        """
         super(EdiFileData, self).__init__(file_path, data)
         if file_path:
             self.edi = read_edi_files([self.file_path])[0]
