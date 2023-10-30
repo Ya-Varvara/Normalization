@@ -11,6 +11,8 @@ from models.normalization_models import NormalizationProfileModel, Normalization
 from models.inversionModel import InversionModel
 from handlers.supportDialogs import choose_folder
 
+from models.ediFileClass import EdiFileData, FrequencyMT1DFileData
+
 
 class TreeWidget(QWidget):
     def __init__(self, parent=None):
@@ -30,19 +32,27 @@ class TreeWidget(QWidget):
         self.top_level_items = {'EDI files': QTreeWidgetItem([f'EDI files']),
                                 'TXT files': QTreeWidgetItem([f'TXT files']),
                                 'Profiles': QTreeWidgetItem([f'Profiles']),
-                                'Inversions': QTreeWidgetItem([f'Inversions'])}
+                                'Inversions': QTreeWidgetItem([f'Inversions']),
+                                'MTD': QTreeWidgetItem([f'MTD'])}
 
-        # словарь файлов .EDI вида {filepath: QTreeWidgetItem}
+        # словарь файлов .EDI вида {FileData: QTreeWidgetItem}
         self.edi_files = {}
 
-        # словарь файлов .txt вида {filepath: QTreeWidgetItem}
+        # словарь файлов .txt вида {FileData: QTreeWidgetItem}
         self.txt_files = {}
 
         # словарь созданных профилей вида {NormalizationProfileModel: QTreeWidgetItem}
         self.profiles = {}
+        self.profile_id = 1
 
         # словарь инверсий {InversionModel: QTreeWidgetItem}
         self.inversions = {}
+
+        # словарь моделей mtd {[GridModel, SimpleModel]: QTreeWidgetItem}
+        self.mtd_models = {}
+
+        # словарь частот для моделей мтд {FreqData: QTreeWidgetItem}
+        self.mtd_freq = {}
 
         self.ui.projectTreeWidget.setHeaderLabel('Дерево проекта')
         self.ui.projectTreeWidget.setSelectionMode(QAbstractItemView.MultiSelection)
@@ -116,7 +126,7 @@ class TreeWidget(QWidget):
             return
 
         norm_id = int(item.text(0).split(' ')[1])
-        model.normalizations[norm_id].save_results(dir_path)
+        model.normalizations[norm_id].export_edi(dir_path)
 
     def show_normalization(self, item=None):
         if item is None:
@@ -190,12 +200,14 @@ class TreeWidget(QWidget):
         parent_item = self.top_level_items['EDI files']
 
         for path in file_paths:
-            child = QTreeWidgetItem([f'{os.path.basename(path)}'])
+            edi_file = EdiFileData(path)
+            child = QTreeWidgetItem([edi_file.tree_label])
             child.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-            self.edi_files[path] = child
+            self.edi_files[edi_file] = child
             parent_item.addChild(child)
 
         parent_item.setExpanded(True)
+
     # end def add_edi_file
 
     def add_txt_file(self, file_paths: list[str]):
@@ -207,18 +219,21 @@ class TreeWidget(QWidget):
         parent_item = self.top_level_items['TXT files']
 
         for path in file_paths:
-            child = QTreeWidgetItem([f'{os.path.basename(path)}'])
+            txt_file = FrequencyMT1DFileData(path)
+            child = QTreeWidgetItem([txt_file.tree_label])
             child.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-            self.txt_files[path] = child
+            self.txt_files[txt_file] = child
             parent_item.addChild(child)
 
         parent_item.setExpanded(True)
+
     # end def add_edi_file
 
     def create_profile(self):
         paths = self.get_checked_edi_file_paths()
         self.clear_selection()
-        self.add_normalization_profile(NormalizationProfileModel(paths))
+        self.add_normalization_profile(NormalizationProfileModel(paths, label=f'Profile {self.profile_id}'))
+        self.profile_id += 1
 
     # end def create_profile
 
@@ -233,18 +248,18 @@ class TreeWidget(QWidget):
             self.ui.projectTreeWidget.addTopLevelItem(parent_item)
             parent_item.setExpanded(True)
 
-        profile_item = QTreeWidgetItem([f'Profile {len(self.profiles) + 1}'])
+        profile_item = QTreeWidgetItem([profile_model.tree_label])
         self.profiles[profile_model] = profile_item
         parent_item.addChild(profile_item)
 
         data_item = QTreeWidgetItem([f'Data'])
         profile_item.addChild(data_item)
-        for path in profile_model.file_paths:
-            data_item.addChild(QTreeWidgetItem([f'{os.path.basename(path)}']))
+        for edi_file in profile_model.edi_files:
+            data_item.addChild(QTreeWidgetItem([edi_file.tree_label]))
 
-        for i, norm in profile_model.normalizations.items():
+        for norm in profile_model.normalizations.values():
             self.parent.add_widget(norm.data_widget)
-            norm = QTreeWidgetItem([f'Normalization {i}'])
+            norm = QTreeWidgetItem([norm.tree_label])
             profile_item.addChild(norm)
 
         self.parent.show_widget(profile_model.data_widget)
@@ -252,18 +267,54 @@ class TreeWidget(QWidget):
     def add_inversion_model(self, inversion: InversionModel):
         parent_item = self.top_level_items['Inversions']
 
-        profile_item = QTreeWidgetItem([f'Inversion {len(self.inversions) + 1}'])
+        profile_item = QTreeWidgetItem([inversion.tree_label])
         self.inversions[inversion] = profile_item
         parent_item.addChild(profile_item)
+        parent_item.setExpanded(True)
 
         self.parent.show_widget(inversion.data_widget)
 
+    def add_inversion_model_to_normalized_profile(self,
+                                                  inversion: InversionModel = None,
+                                                  profile: NormalizationProfileModel = None,
+                                                  norma: Normalization = None,
+                                                  edi_file: EdiFileData = None):
+        parent_item = self.profiles[profile]
+        profile_children = [parent_item.child(x) for x in range(parent_item.childCount())]
+        norma_item = list(filter(lambda child: child.text(0) == norma.tree_label, profile_children))[0]
+        print(norma_item.text(0))
+        inv_item = QTreeWidgetItem([inversion.tree_label])
+        self.inversions[inversion] = inv_item
+        norma_item.addChild(inv_item)
+        norma_item.setExpanded(True)
+
+        self.parent.show_widget(inversion.data_widget)
 
     def add_normalization_to_profile(self, profile: NormalizationProfileModel, norma: Normalization):
         prof = self.profiles[profile]
-        norm = QTreeWidgetItem([f'Normalization {len(profile.normalizations)}'])
+        norm = QTreeWidgetItem([norma.tree_label])
         prof.addChild(norm)
         self.parent.show_widget(norma.data_widget)
+
+    def add_mtd_model(self, mtd_model):
+        if mtd_model.file_path is None:
+            child = QTreeWidgetItem([mtd_model.tree_label])
+        else:
+            child = QTreeWidgetItem([os.path.basename(mtd_model.file_path)])
+        child.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        self.mtd_models[mtd_model] = child
+        parent_item = self.top_level_items['MTD']
+
+        parent_item.addChild(child)
+        parent_item.setExpanded(True)
+
+    # end def add_mtd_model
+
+    def add_point_to_mtd_model(self, point, mtd_model):
+        child = QTreeWidgetItem([point.tree_label])
+        self.top_level_items['MTD'].child(self.mtd_models[mtd_model]).addChild(child)
+
+    # end def add_point_to_mtd_model
 
     def get_checked_edi_file_paths(self) -> list:
         """
@@ -336,6 +387,7 @@ class TreeWidget(QWidget):
             for norm in profile_model.normalizations.values():
                 widgets.append(norm.data_widget)
             self.parent.remove_widgets(widgets)
+        del self.profiles[profile_model]
 
     def remove_normalization_model(self):
         profile_model = self.get_selected_normalization_model()
@@ -347,6 +399,8 @@ class TreeWidget(QWidget):
             profile_item.removeChild(norm_item)
             widgets = [profile_model.normalizations[norm_id].data_widget]
             self.parent.remove_widgets(widgets)
+
+        profile_model.delete_normalization(norm_id)
 
     def find_model_by_widget(self, widget):
         # if isinstance()

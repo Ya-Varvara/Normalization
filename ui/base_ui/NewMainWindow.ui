@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>995</width>
-    <height>560</height>
+    <width>1000</width>
+    <height>9</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>995</width>
+     <width>1000</width>
      <height>22</height>
     </rect>
    </property>
@@ -44,7 +44,6 @@
    </widget>
    <addaction name="menuFile"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="normalizationDock">
    <property name="toolTip">
     <string/>
@@ -115,6 +114,7 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="openFileAction">
    <property name="text">
     <string>Open</string>

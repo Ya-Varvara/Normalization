@@ -1,4 +1,4 @@
-from inversion.inversion import fit_1d_model, get_z_from_edi, forward_1D_MT, calc_phase
+from inversion.inversion import fit_1d_model, get_z_from_edi, forward_1D_MT, calc_phase, export_z_rho
 from normalization.EDI import mtedi
 from ui.InvertionWidget import InversionWidget
 
@@ -7,11 +7,17 @@ from numpy import log, abs, real, imag
 
 
 class InversionModel:
-    def __init__(self, edi_file_path, ro_init, h_init, is_fixed_ro, is_fixed_h, component, N_iter = 10, min_res=0.1, max_res=10000):
-        self.edi_file_path = edi_file_path
+    def __init__(self,
+                 edi_file, ro_init, h_init,
+                 is_fixed_ro, is_fixed_h, component,
+                 N_iter = 10,
+                 min_res=0.1,
+                 max_res=10000,
+                 label=None):
+        self.edi_file = edi_file
 
-        self.edi = mtedi.Edi()
-        self.edi.read_edi_file(self.edi_file_path)
+        self.edi = self.edi_file.edi
+        self.tree_label = label
         # print(self.edi)
 
         self.ro_init = ro_init
@@ -23,9 +29,7 @@ class InversionModel:
         self.min_res = min_res
         self.max_res = max_res
 
-        self.Z, self.t_list = get_z_from_edi(self.edi, self.component)
-        print(self.t_list)
-        print(self.Z)
+        self.t_list, self.Z = get_z_from_edi(self.edi, self.component)
 
         self.ro_out, self.h_out = fit_1d_model(ro_init, h_init, is_fixed_ro, is_fixed_h, self.Z, self.t_list,
                                                self.N_iter, method='CG', min_res=self.min_res, max_res=self.max_res)
@@ -40,4 +44,8 @@ class InversionModel:
         self.Z_Im_error = 3
 
         self.data_widget = InversionWidget(self)
+
+    def save_inversion(self, folder_path):
+        file_path = f'{folder_path}/{self.tree_label}'
+        export_z_rho(self.h_out[:-1], self.ro_out, file_path)
 

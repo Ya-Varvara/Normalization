@@ -5,18 +5,23 @@ from numpy import loadtxt, append as npappend
 
 from ui.base_ui.SimpleModelDialog import Ui_Dialog
 
+
 class SimpleModelDialog(QDialog):
-    def __init__(self):
+    def __init__(self, mesh_data=None):
         super(SimpleModelDialog, self).__init__()
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
         int_validator = QRegExpValidator(QRegExp(r'[0-9]+'))
 
-        self.data = {'ro_init': [0]*self.ui.modelTableWidget.rowCount(),
-                     'h_init': [0]*self.ui.modelTableWidget.rowCount(), 
-                     'is_fixed_ro': [0]*self.ui.modelTableWidget.rowCount(),
-                     'is_fixed_h': [0]*self.ui.modelTableWidget.rowCount()}
+        if mesh_data:
+            self.data = mesh_data
+            self.fill_table()
+        else:
+            self.data = {'ro_init': [0]*self.ui.modelTableWidget.rowCount(),
+                         'h_init': [0]*self.ui.modelTableWidget.rowCount(),
+                         'is_fixed_ro': [0]*self.ui.modelTableWidget.rowCount(),
+                         'is_fixed_h': [0]*self.ui.modelTableWidget.rowCount()}
         self.file_name = None
 
         self.ui.modelFileName.setReadOnly(True)
@@ -86,7 +91,19 @@ class SimpleModelDialog(QDialog):
         self.ui.modelTableWidget.setRowCount(len(ro_init))
         for row in range(self.ui.modelTableWidget.rowCount()):
             self.ui.modelTableWidget.setItem(row, 0, QTableWidgetItem(str(ro_init[row])))
-            self.ui.modelTableWidget.setItem(row, 1, QTableWidgetItem(str(h_init[row])))       
+            self.ui.modelTableWidget.setItem(row, 1, QTableWidgetItem(str(h_init[row])))
+
+    def fill_table(self):
+        ro_init = self.data['ro_init']
+        h_init = self.data['h_init']
+        is_fixed_ro = self.data['is_fixed_ro']
+        is_fixed_h = self.data['is_fixed_h']
+        self.ui.modelTableWidget.setRowCount(len(ro_init))
+        for row in range(self.ui.modelTableWidget.rowCount()):
+            self.ui.modelTableWidget.setItem(row, 0, QTableWidgetItem(str(ro_init[row])))
+            self.ui.modelTableWidget.item(row, 0).setSelected(is_fixed_ro[row])
+            self.ui.modelTableWidget.setItem(row, 1, QTableWidgetItem(str(h_init[row])))
+            self.ui.modelTableWidget.item(row, 1).setSelected(is_fixed_h[row])
 
     def add_table_row(self):
         self.ui.modelTableWidget.insertRow(self.ui.modelTableWidget.rowCount())
